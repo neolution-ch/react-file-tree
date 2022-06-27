@@ -269,7 +269,7 @@ const FileTree: React.FC<FileTreeProps> = ({
       if (result) {
         setIsFolderTreeLoading(true);
         setIsAddFolderModalOpen(false);
-        if (folder.parentId) await refreshSubTreeAsync(folder.parentId);
+        await refreshSubTreeAsync(folder.parentId ?? null);
         setIsFolderTreeLoading(false);
       }
     };

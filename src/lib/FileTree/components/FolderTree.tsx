@@ -3,17 +3,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import Dropzone from "react-dropzone";
 import { Spinner } from "reactstrap";
-import { FlatFolder } from "../types";
+import { Folder } from "../types";
 import { Translations } from "../../Utils/translations";
 
 interface FolderTreeProps {
-  folders: FlatFolder[] | undefined;
+  folders: Folder[] | undefined;
   onToggleFolder: (folderId: string) => void;
   onSelectFolder: (folderId: string) => void;
   onRequestUploadFiles: (folderId: string, acceptedFiles: File[]) => void;
-  onRequestAddFolder: (parentFolder: FlatFolder | null) => void;
-  onRequestEditFolder: (folder: FlatFolder) => void;
-  onRequestDeleteFolder: (folder: FlatFolder) => void;
+  onRequestAddFolder: (parentFolder: Folder | null) => void;
+  onRequestEditFolder: (folder: Folder) => void;
+  onRequestDeleteFolder: (folder: Folder) => void;
   selectedFolderId?: string;
   isLoading: boolean;
 }
@@ -48,7 +48,7 @@ const FolderTree: React.FC<FolderTreeProps> = (props) => {
 
 interface FolderSubtreeProps extends FolderTreeProps {
   parentIdToDisplay?: string;
-  folders: FlatFolder[];
+  folders: Folder[];
 }
 
 const FolderSubtree: React.FC<FolderSubtreeProps> = (props) => {

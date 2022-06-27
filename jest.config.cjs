@@ -7,4 +7,7 @@ module.exports = {
   },
   moduleFileExtensions: ["js", "jsx", "ts", "tsx", "json", "node", "cjs"],
   moduleDirectories: ["node_modules", "<rootDir>"],
+  moduleNameMapper: {
+    "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+  },
 };
