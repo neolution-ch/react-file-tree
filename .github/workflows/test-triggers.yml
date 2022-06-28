@@ -1,4 +1,4 @@
-name: Publish NPM and Storybook
+name: TRIGGER TESTS
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    if: github.event.pull_request.merged == true && github.head_ref == 'release/v*'
+    if: startsWith(github.head_ref, 'release/v')
     runs-on: ubuntu-latest
     steps:
       - run: echo "hello world"

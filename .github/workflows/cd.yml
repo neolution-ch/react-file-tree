@@ -1,9 +1,10 @@
 name: Publish NPM and Storybook
 
 on:
-  push:
-    branches:
-      - "release/**"
+  workflow_dispatch:
+#   push:
+#     branches:
+#       - "release/**"
 
 jobs:
   publish-npm:
