@@ -1,4 +1,4 @@
-name: Prepare Release
+name: Create Release
 
 on:
   workflow_dispatch:
@@ -41,6 +41,23 @@ jobs:
 
       - name: Push new branch
         run: git push origin release/v${{ github.event.inputs.versionName }}
+
+      - name: Extract release notes
+        id: extract_release_notes
+        uses: ffurrer2/extract-release-notes@v1
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.event.inputs.versionName }}
+          release_name: v${{ github.event.inputs.versionName }}
+          body: ${{ steps.extract_release_notes.outputs.release_notes }}
+          draft: false
+          prerelease: false
+          commitish: release/v${{ github.event.inputs.versionName }}
 
       - name: Create pull request into main
         uses: thomaseizinger/create-pull-request@1.0.0

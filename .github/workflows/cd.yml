@@ -7,38 +7,20 @@ on:
     types: [closed]
 
 jobs:
-  create-github-release:
-    if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.head_ref }}
-
-      - name: Extract release notes
-        id: extract_release_notes
-        uses: ffurrer2/extract-release-notes@v1
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ github.event.inputs.versionName }}
-          release_name: v${{ github.event.inputs.versionName }}
-          body: ${{ steps.extract_release_notes.outputs.release_notes }}
-          draft: false
-          prerelease: false
-          commitish: ${{ github.head_ref }}
-
   publish:
     if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
+      - run: |
+          tag="${github_ref/release///}"
+          echo $tag
+          echo "tag=$tag" >> $GITHUB_ENV
+      env:
+        github_ref: ${{ github.head_ref }}
+
       - uses: actions/checkout@v2
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ env.tag }}
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
