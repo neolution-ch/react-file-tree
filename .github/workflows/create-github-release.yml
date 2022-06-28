@@ -54,6 +54,7 @@ jobs:
           body: ${{ steps.extract_release_notes.outputs.release_notes }}
           draft: false
           prerelease: false
+          commitish: release/v${{ github.event.inputs.versionName }}
 
       - name: Push new branch
         run: git push origin release/v${{ github.event.inputs.versionName }}
