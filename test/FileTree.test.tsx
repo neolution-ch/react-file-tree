@@ -11,13 +11,13 @@ import {
   OnListFilesFn,
   OnLoadFolderTreeFn,
 } from "../src/lib/FileTree/FileTree";
-import { FileItem, FlatFolder } from "../src/lib/FileTree/types";
+import { FileItem, Folder } from "../src/lib/FileTree/types";
 import { Translations } from "../src/lib/Utils/translations";
 
 describe("<FileTree />", () => {
   const { labelName, labelYes, labelSubmit, labelDelete } = Translations.getTranslations();
 
-  const exampleFolders: FlatFolder[] = [
+  const exampleFolders: Folder[] = [
     {
       id: "1",
       name: "folder 1",
@@ -67,12 +67,6 @@ describe("<FileTree />", () => {
     }),
   ];
 
-  console.log(exampleInputFiles);
-  console.log(labelName);
-  console.log(labelSubmit);
-  console.log(labelDelete);
-  console.log(fireEvent);
-
   interface Options {
     onAddFolder?: OnAddFolderFn;
     onDeleteFolder?: OnDeleteFolderFn;
@@ -104,7 +98,7 @@ describe("<FileTree />", () => {
 
     const utils = render(
       <FileTree
-        flatFolders={folders}
+        folders={folders}
         onAddFolder={onAddFolder}
         onDeleteFolder={onDeleteFolder}
         onEditFolder={onEditFolder}
@@ -117,66 +111,64 @@ describe("<FileTree />", () => {
     return { onAddFolder, onListFiles, onDeleteFolder, onEditFolder, onFileUpload, onLoadFolderTree, onDeleteFile, ...utils };
   }
 
-  // test("add folder works", async () => {
-  //   const newFolderName = "N";
-  //   const folderSubTree: FlatFolder[] = [
-  //     {
-  //       id: "1.1",
-  //       name: "folder 1.1",
-  //     },
-  //     {
-  //       id: "1.2",
-  //       name: "N",
-  //     },
-  //   ];
+  test("add folder works", async () => {
+    const newFolderName = "N";
+    const folderSubTree: Folder[] = [
+      {
+        id: "1.1",
+        name: "folder 1.1",
+      },
+      {
+        id: "1.2",
+        name: "N",
+      },
+    ];
 
-  //   const { getByText, getByLabelText, onAddFolder, onLoadFolderTree } = setup({
-  //     onLoadFolderTree: jest.fn(async () => folderSubTree),
-  //   });
+    const { getByText, getByLabelText, onAddFolder, onLoadFolderTree } = setup({
+      onLoadFolderTree: jest.fn(async () => folderSubTree),
+    });
 
-  //   // Open the root folders so we see the neewly added folder later
-  //   exampleFolders.forEach((x) => {
-  //     getByText(x.name).closest("li")?.querySelector(".fa-angle-right")?.closest("a")?.click();
-  //   });
+    // Open the root folders so we see the neewly added folder later
+    exampleFolders.forEach((x) => {
+      getByText(x.name).closest("li")?.querySelector(".fa-angle-right")?.closest("a")?.click();
+    });
 
-  //   // Click the plus button, type the new name and hit the send button
-  //   getByText(exampleFolders[0].name).closest("li")?.querySelector(".fa-plus")?.closest("a")?.click();
-  //   userEvent.type(getByLabelText(labelName), newFolderName);
-  //   userEvent.click(getByText(labelSubmit));
+    // Click the plus button, type the new name and hit the send button
+    getByText(exampleFolders[0].name).closest("li")?.querySelector(".fa-plus")?.closest("a")?.click();
+    userEvent.type(getByLabelText(labelName), newFolderName);
+    userEvent.click(getByText(labelSubmit));
 
-  //   await waitFor(() => expect(onAddFolder).toHaveBeenNthCalledWith(1, "1", newFolderName));
-  //   await waitFor(() => expect(onLoadFolderTree).toHaveBeenNthCalledWith(1, "1"));
-  //   await waitFor(() => expect(getByText(newFolderName)).toBeTruthy());
-  // });
+    await waitFor(() => expect(onAddFolder).toHaveBeenNthCalledWith(1, "1", newFolderName));
+    await waitFor(() => expect(onLoadFolderTree).toHaveBeenNthCalledWith(1, "1"));
+    await waitFor(() => expect(getByText(newFolderName)).toBeTruthy());
+  });
 
-  // test("edit folder works", async () => {
-  //   const newFolderName = "new folder name";
-  //   const folderSubTree: FlatFolder[] = JSON.parse(JSON.stringify(exampleFolders));
-  //   folderSubTree[0].name = newFolderName;
+  test("edit folder works", async () => {
+    const newFolderName = "new folder name";
+    const folderSubTree: Folder[] = JSON.parse(JSON.stringify(exampleFolders));
+    folderSubTree[0].name = newFolderName;
 
-  //   const { getByText, getByLabelText, onEditFolder, onLoadFolderTree } = setup({
-  //     onLoadFolderTree: jest.fn(async () => folderSubTree),
-  //   });
+    const { getByText, getByLabelText, onEditFolder, onLoadFolderTree } = setup({
+      onLoadFolderTree: jest.fn(async () => folderSubTree),
+    });
 
-  //   // Click the edit button, type the new name and hit the send button
-  //   getByText(exampleFolders[0].name).closest("li")?.querySelector(".fa-pen-to-square")?.closest("a")?.click();
-  //   const inputField = getByLabelText(labelName);
-  //   expect((inputField as HTMLInputElement).value).toBe(exampleFolders[0].name);
-  //   userEvent.clear(inputField);
-  //   userEvent.type(inputField, newFolderName);
-  //   userEvent.click(getByText(labelSubmit));
+    // Click the edit button, type the new name and hit the send button
+    getByText(exampleFolders[0].name).closest("li")?.querySelector(".fa-pen-to-square")?.closest("a")?.click();
+    const inputField = getByLabelText(labelName);
+    expect((inputField as HTMLInputElement).value).toBe(exampleFolders[0].name);
+    userEvent.clear(inputField);
+    userEvent.type(inputField, newFolderName);
+    userEvent.click(getByText(labelSubmit));
 
-  //   await waitFor(() => expect(onEditFolder).toHaveBeenNthCalledWith(1, "1", newFolderName));
-  //   await waitFor(() => expect(onLoadFolderTree).toHaveBeenNthCalledWith(1, null));
-  //   await waitFor(() => expect(getByText(newFolderName)).toBeTruthy());
-  // });
+    await waitFor(() => expect(onEditFolder).toHaveBeenNthCalledWith(1, "1", newFolderName));
+    await waitFor(() => expect(onLoadFolderTree).toHaveBeenNthCalledWith(1, null));
+    await waitFor(() => expect(getByText(newFolderName)).toBeTruthy());
+  });
 
   test("delete folder works", async () => {
-    let folderSubTree: FlatFolder[] = JSON.parse(JSON.stringify(exampleFolders));
+    let folderSubTree: Folder[] = JSON.parse(JSON.stringify(exampleFolders));
     // eslint-disable-next-line prefer-destructuring
     const folderToDelete = folderSubTree[2];
-    console.log("folderToDelete.name");
-    console.log(folderToDelete.name);
     folderSubTree = folderSubTree.filter((x) => x.name !== folderToDelete.name);
 
     const { queryByText, getByText, onDeleteFolder, onLoadFolderTree } = setup({
@@ -265,15 +257,15 @@ describe("<FileTree />", () => {
     expect(getByText(exampleFiles[1].name).closest("tr")?.querySelector(".fa-trash")).toBeNull();
   });
 
-  // test("renders correctly", async () => {
-  //   const { container, getByText } = setup({});
+  test("renders correctly", async () => {
+    const { container, getByText } = setup({});
 
-  //   exampleFolders
-  //     .filter((x) => x.parentId === undefined)
-  //     .forEach((x) => {
-  //       getByText(x.name).closest("li")?.querySelector(".fa-angle-right")?.closest("a")?.click();
-  //     });
+    exampleFolders
+      .filter((x) => x.parentId === undefined)
+      .forEach((x) => {
+        getByText(x.name).closest("li")?.querySelector(".fa-angle-right")?.closest("a")?.click();
+      });
 
-  //   expect(container.firstChild).toMatchSnapshot();
-  // });
+    expect(container.firstChild).toMatchSnapshot();
+  });
 });

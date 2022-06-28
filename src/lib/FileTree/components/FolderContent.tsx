@@ -17,21 +17,20 @@ import { faPlus, faEdit, faTrash, faFolder, faCog, faAngleDown, faDownload } fro
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Dropzone from "react-dropzone";
 import { FileIconFormatter, formatDatetime, formatFileSize } from "../../Utils/formatters";
-import { FileItem, FlatFolder } from "../types";
+import { FileItem, Folder } from "../types";
 import { Translations } from "../../Utils/translations";
-import { OnListFilesFn } from "../FileTree";
 
 interface FolderContentProps {
-  folders: FlatFolder[];
+  folders: Folder[];
   selectedFolderId?: string;
   onSelectFolder: (folderId: string) => void;
   onRequestUploadFiles: (folderId: string, acceptedFiles: File[]) => void;
-  onRequestAddFolder: (parentFolder: FlatFolder) => void;
-  onRequestEditFolder: (folder: FlatFolder) => void;
-  onRequestDeleteFolder: (folder: FlatFolder) => void;
+  onRequestAddFolder: (parentFolder: Folder) => void;
+  onRequestEditFolder: (folder: Folder) => void;
+  onRequestDeleteFolder: (folder: Folder) => void;
   onRequestDeleteFile: (fileId: string) => void;
   sizeExceeded: boolean;
-  onListFiles: OnListFilesFn;
+  files?: FileItem[];
 }
 
 const FolderContent: React.FC<FolderContentProps> = ({
@@ -43,25 +42,20 @@ const FolderContent: React.FC<FolderContentProps> = ({
   onRequestUploadFiles,
   onSelectFolder,
   onRequestDeleteFile,
-  onListFiles,
+  files,
   sizeExceeded = true,
 }) => {
   const { textDropZone, labelDateModified, labelName, warningSizeExceeded } = Translations.getTranslations();
 
-  const [files, setFiles] = useState<FileItem[]>();
-  const [breadCrumbs, setBreadCrumbs] = useState<FlatFolder[]>([]);
-
-  useEffect(() => {
-    if (selectedFolderId) onListFiles(selectedFolderId).then((files) => setFiles(files));
-  }, [selectedFolderId]);
+  const [breadCrumbs, setBreadCrumbs] = useState<Folder[]>([]);
 
   const selectedFolder = folders.find((folder) => folder.id === selectedFolderId);
 
-  const getBreadCrumbs = (): FlatFolder[] => {
+  const getBreadCrumbs = (): Folder[] => {
     if (!selectedFolder) return [];
 
-    const result: FlatFolder[] = [];
-    let start: FlatFolder | undefined = selectedFolder;
+    const result: Folder[] = [];
+    let start: Folder | undefined = selectedFolder;
 
     while (start) {
       result.push(start);
@@ -161,7 +155,7 @@ const FolderContent: React.FC<FolderContentProps> = ({
             </Dropzone>
           )}
 
-          {folders.some((x) => x.parentId === selectedFolderId) && (
+          {(folders.some((x) => x.parentId === selectedFolderId) || (files?.length && files.length > 0)) && (
             <table className="mb-0 table table-hover">
               <thead>
                 <tr>

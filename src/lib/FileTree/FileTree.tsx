@@ -3,7 +3,7 @@ import React, { useRef, useState } from "react";
 import { Col, Row } from "reactstrap";
 import { v4 as uuidv4 } from "uuid";
 import { AddFolderModal } from "./components/AddFolderModal";
-import { FileItem, FileWithId, SupportedLangs, FlatFolder } from "./types";
+import { FileItem, FileWithId, SupportedLangs, Folder } from "./types";
 import { FolderContent } from "./components/FolderContent";
 import { FolderTree } from "./components/FolderTree";
 import { DeleteConfirmModal } from "./components/DeleteConfirmModal";
@@ -16,7 +16,7 @@ export type OnAddFolderFn = (parentId: string | null, name: string) => Promise<b
 export type OnEditFolderFn = (folderId: string, name: string) => Promise<boolean>;
 export type OnDeleteFolderFn = (folderId: string) => Promise<boolean>;
 export type OnListFilesFn = (folderId: string) => Promise<FileItem[]>;
-export type OnLoadFolderTreeFn = (parentFolderId: string | null) => Promise<FlatFolder[]>;
+export type OnLoadFolderTreeFn = (parentFolderId: string | null) => Promise<Folder[]>;
 export type OnDeleteFileFn = (parentFolderId: string | null) => Promise<boolean>;
 export type OnFileUploadFn = (
   folderId: string,
@@ -48,8 +48,8 @@ interface FileTreeProps {
   initialSpaceUsed?: number;
   /** The space available in bytes */
   spaceAvailable?: number;
-
-  flatFolders: FlatFolder[];
+  /** The initial folder structure */
+  folders: Folder[];
 }
 
 /**
@@ -68,12 +68,14 @@ const FileTree: React.FC<FileTreeProps> = ({
   language,
   spaceAvailable,
   initialSpaceUsed,
-  flatFolders,
+  folders,
 }) => {
   const [isAddFolderModalOpen, setIsAddFolderModalOpen] = useState(false);
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false);
-  const [flatFolderState, setFlatFolderState] = useState(flatFolders);
+  // we json stringify and parse it to a get a true copy of the array so we never modify the original array...
+  const [folderState, setFolderState] = useState(JSON.parse(JSON.stringify(folders)) as Folder[]);
   const [selectedFolderId, setSelectedFolderId] = useState<string>();
+  const [files, setFiles] = useState<FileItem[]>();
   const [progressSates, setProgressStates] = useState<ProgressState[]>([]);
   const [isFolderTreeLoading, setIsFolderTreeLoading] = useState(false);
   const [spaceUsed, setSpaceUsed] = useState(Math.min(initialSpaceUsed ?? 0, spaceAvailable ?? Number.MAX_SAFE_INTEGER));
@@ -92,18 +94,14 @@ const FileTree: React.FC<FileTreeProps> = ({
   }
 
   const refreshSubTreeAsync = async (folderId: string | null) => {
-    console.log(`Refreshing folder with id ${folderId}`);
-
-    const copy = [...flatFolderState];
+    const copy = [...folderState];
 
     const newSubTree = await onLoadFolderTree(folderId);
-    console.log(`New Subtree is ${newSubTree}`);
-    console.log(newSubTree);
 
     copy.forEach((x) => {
       const pathIds = [];
       if (folderId != null) {
-        let start: FlatFolder | undefined = x;
+        let start: Folder | undefined = x;
         while (start) {
           pathIds.push(start.id);
           start = copy.find((folder) => folder.id === start?.parentId);
@@ -133,11 +131,11 @@ const FileTree: React.FC<FileTreeProps> = ({
       }
     });
 
-    setFlatFolderState(copy);
+    setFolderState(copy);
   };
 
   const onToggleFolder = (folderId: string) => {
-    setFlatFolderState((prev) => {
+    setFolderState((prev) => {
       const copy = [...prev];
 
       var folder = copy.find((x) => x.id === folderId);
@@ -149,7 +147,7 @@ const FileTree: React.FC<FileTreeProps> = ({
   };
 
   const onSelectFolderAsync = async (folderId: string) => {
-    setFlatFolderState((prev) => {
+    setFolderState((prev) => {
       const copy = [...prev];
 
       var folder = copy.find((x) => x.id === folderId);
@@ -158,13 +156,17 @@ const FileTree: React.FC<FileTreeProps> = ({
         var parentFolder = copy.find((x) => x.id === folder?.parentId);
         if (parentFolder) parentFolder.isOpen = true;
         setSelectedFolderId(folderId);
+
+        onListFiles(folderId).then((files) => {
+          setFiles(files);
+        });
       }
 
       return copy;
     });
   };
 
-  const onRequestAddFolder = (parentFolder: FlatFolder | null) => {
+  const onRequestAddFolder = (parentFolder: Folder | null) => {
     setIsAddFolderModalOpen(true);
 
     editDeleteActionRef.current = async (name: string) => {
@@ -180,7 +182,7 @@ const FileTree: React.FC<FileTreeProps> = ({
     };
   };
 
-  const onRequestDeleteFolder = (folder: FlatFolder) => {
+  const onRequestDeleteFolder = (folder: Folder) => {
     setIsDeleteConfirmModalOpen(true);
     deleteIsFolder.current = true;
 
@@ -190,7 +192,7 @@ const FileTree: React.FC<FileTreeProps> = ({
         setIsFolderTreeLoading(true);
         setIsDeleteConfirmModalOpen(false);
 
-        if (folder.parentId) await refreshSubTreeAsync(folder.parentId);
+        await refreshSubTreeAsync(folder.parentId ?? null);
 
         // remove selected folder if it was deleted
         if (folder.id == selectedFolderId) setSelectedFolderId(undefined);
@@ -260,7 +262,7 @@ const FileTree: React.FC<FileTreeProps> = ({
     if (folderId == selectedFolderId) await onSelectFolderAsync(folderId);
   };
 
-  const onRequestEditFolder = (folder: FlatFolder) => {
+  const onRequestEditFolder = (folder: Folder) => {
     editFolderName.current = folder.name;
     setIsAddFolderModalOpen(true);
 
@@ -281,7 +283,7 @@ const FileTree: React.FC<FileTreeProps> = ({
         <Col lg={3}>
           <FolderTree
             isLoading={isFolderTreeLoading}
-            folders={flatFolderState}
+            folders={folderState}
             onToggleFolder={onToggleFolder}
             onSelectFolder={onSelectFolderAsync}
             selectedFolderId={selectedFolderId}
@@ -298,8 +300,8 @@ const FileTree: React.FC<FileTreeProps> = ({
           <FolderContent
             sizeExceeded={spaceUsed >= (spaceAvailable ?? Number.MAX_SAFE_INTEGER)}
             onSelectFolder={onSelectFolderAsync}
-            folders={flatFolderState}
-            onListFiles={onListFiles}
+            folders={folderState}
+            files={files}
             selectedFolderId={selectedFolderId}
             onRequestAddFolder={(parentFolder) => onRequestAddFolder(parentFolder)}
             onRequestEditFolder={(folder) => onRequestEditFolder(folder)}
@@ -333,4 +335,4 @@ const FileTree: React.FC<FileTreeProps> = ({
   );
 };
 
-export { FileTree, FileTreeProps, FileItem, FlatFolder };
+export { FileTree, FileTreeProps, FileItem, Folder };

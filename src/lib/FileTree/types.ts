@@ -13,7 +13,7 @@ interface FileWithId {
   file: File;
 }
 
-interface FlatFolder {
+interface Folder {
   id: string;
   name: string;
   parentId?: string;
@@ -22,4 +22,4 @@ interface FlatFolder {
 
 type SupportedLangs = "en" | "it";
 
-export { FileItem, FileWithId, SupportedLangs, FlatFolder };
+export { FileItem, FileWithId, SupportedLangs, Folder };
