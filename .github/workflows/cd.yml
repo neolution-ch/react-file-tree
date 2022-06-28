@@ -15,8 +15,8 @@ jobs:
           tag="${github_ref/release///}"
           echo $tag
           echo "tag=$tag" >> $GITHUB_ENV
-      env:
-        github_ref: ${{ github.head_ref }}
+        env:
+          github_ref: ${{ github.head_ref }}
 
       - uses: actions/checkout@v2
         with:
