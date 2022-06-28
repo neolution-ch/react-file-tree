@@ -3,7 +3,7 @@ name: Publish NPM and Storybook
 on:
   push:
     branches:
-      - "releases/**"
+      - 'releases/**'
 
 jobs:
   publish-npm:
