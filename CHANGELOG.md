@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [14.0.0] - 2022-06-28
+
 ### Changed
 
 -   Whaterver 13
@@ -67,7 +69,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Created package :tada:
 
-[Unreleased]: https://github.com/neolution-ch/react-file-tree/compare/12.0.0...HEAD
+[Unreleased]: https://github.com/neolution-ch/react-file-tree/compare/14.0.0...HEAD
+
+[14.0.0]: https://github.com/neolution-ch/react-file-tree/compare/12.0.0...14.0.0
 
 [12.0.0]: https://github.com/neolution-ch/react-file-tree/compare/11.1.0...12.0.0
 
