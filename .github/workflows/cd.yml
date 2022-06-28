@@ -1,8 +1,9 @@
 name: Publish NPM and Storybook
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - "releases/**"
 
 jobs:
   publish-npm:

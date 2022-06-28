@@ -39,22 +39,6 @@ jobs:
           git commit --message "Release ${{ github.event.inputs.versionName }}"
           echo "::set-output name=commit::$(git rev-parse HEAD)"
 
-      - name: Push new branch
-        run: git push origin release/v${{ github.event.inputs.versionName }}
-
-      - name: Create pull request into main
-        uses: thomaseizinger/create-pull-request@1.0.0
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          head: release/v${{ github.event.inputs.versionName }}
-          base: main
-          title: v${{ github.event.inputs.versionName }} into main
-          reviewers: ${{ github.event.issue.user.login }}
-          body: |
-            Hi!
-            This PR was created in response workflow running.
-            I've updated the version name and code commit: ${{ steps.make-commit.outputs.commit }}.
-
       - name: Extract release notes
         id: extract_release_notes
         uses: ffurrer2/extract-release-notes@v1
@@ -70,3 +54,19 @@ jobs:
           body: ${{ steps.extract_release_notes.outputs.release_notes }}
           draft: false
           prerelease: false
+
+      - name: Push new branch
+        run: git push origin release/v${{ github.event.inputs.versionName }}
+
+      - name: Create pull request into main
+        uses: thomaseizinger/create-pull-request@1.0.0
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          head: release/v${{ github.event.inputs.versionName }}
+          base: main
+          title: v${{ github.event.inputs.versionName }} into main
+          reviewers: ${{ github.event.issue.user.login }}
+          body: |
+            Hi!
+            This PR was created in response workflow running.
+            I've updated the version name and code commit: ${{ steps.make-commit.outputs.commit }}.
