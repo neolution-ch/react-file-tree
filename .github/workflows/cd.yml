@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          tag="${github_ref/release///}"
+          tag="${github_ref/release\/}"
           echo $tag
           echo "tag=$tag" >> $GITHUB_ENV
         env:
