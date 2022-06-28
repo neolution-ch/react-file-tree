@@ -2,11 +2,13 @@ name: Publish NPM and Storybook
 
 on:
   pull_request:
-    types:
-      - closed
+    branches:
+      - main
+    types: [closed]
 
 jobs:
   test:
+    if: github.event.pull_request.merged == true && github.head_ref == 'release/v*'
     runs-on: ubuntu-latest
     steps:
       - run: echo "hello world"
