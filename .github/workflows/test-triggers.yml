@@ -1,0 +1,16 @@
+name: Publish NPM and Storybook
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "hello world"
+
+      - run: echo ${{ github.head_ref }}
+      - run: echo ${{ github.repository }}
+      - run: echo ${{ github.base_ref }}
+      - run: echo ${{ github.event.pull_request.base.ref }}
