@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2022-06-28
+
 ## [2.2.0] - 2022-06-28
 
 ### Changed
@@ -43,7 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Created package :tada:
 
-[Unreleased]: https://github.com/neolution-ch/react-file-tree/compare/2.2.0...HEAD
+[Unreleased]: https://github.com/neolution-ch/react-file-tree/compare/3.0.0...HEAD
+
+[3.0.0]: https://github.com/neolution-ch/react-file-tree/compare/2.2.0...3.0.0
 
 [2.2.0]: https://github.com/neolution-ch/react-file-tree/compare/2.0.1...2.2.0
 
