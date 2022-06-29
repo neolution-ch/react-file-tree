@@ -9,10 +9,19 @@ import {
   OnEditFolderFn,
   OnFileUploadFn,
   OnListFilesFn,
-  OnLoadFolderTreeFn,
 } from "../src/lib/FileTree/FileTree";
 import { FileItem, Folder } from "../src/lib/FileTree/types";
 import { Translations } from "../src/lib/Utils/translations";
+
+const makeid = (length = 10) => {
+  var result = "";
+  var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  var charactersLength = characters.length;
+  for (var i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};
 
 describe("<FileTree />", () => {
   const { labelName, labelYes, labelSubmit, labelDelete } = Translations.getTranslations();
@@ -72,19 +81,17 @@ describe("<FileTree />", () => {
     onDeleteFolder?: OnDeleteFolderFn;
     onEditFolder?: OnEditFolderFn;
     onFileUpload?: OnFileUploadFn;
-    onLoadFolderTree?: OnLoadFolderTreeFn;
     onDeleteFile?: OnDeleteFileFn;
     onListFiles?: OnListFilesFn;
   }
 
   function setup(options: Options, folders = exampleFolders) {
-    const onAddFolderMock = jest.fn(async () => true);
+    const onAddFolderMock = jest.fn(async () => makeid());
     const onDeleteFolderMock = jest.fn(async () => true);
     const onEditFolderMock = jest.fn(async () => true);
     const onDeleteFileMock = jest.fn(async () => true);
     const onFileUploadMock = jest.fn(async () => true);
     const onListFilesMock = jest.fn(async () => exampleFiles);
-    const onLoadFolderTreeMock = jest.fn(async () => []);
 
     const {
       onAddFolder = onAddFolderMock,
@@ -92,41 +99,27 @@ describe("<FileTree />", () => {
       onDeleteFolder = onDeleteFolderMock,
       onEditFolder = onEditFolderMock,
       onFileUpload = onFileUploadMock,
-      onLoadFolderTree = onLoadFolderTreeMock,
       onDeleteFile = onDeleteFileMock,
     } = options;
 
     const utils = render(
       <FileTree
-        folders={folders}
+        initialFolders={folders}
         onAddFolder={onAddFolder}
         onDeleteFolder={onDeleteFolder}
         onEditFolder={onEditFolder}
         onFileUpload={onFileUpload}
-        onLoadFolderTree={onLoadFolderTree}
         onListFiles={onListFiles}
         onDeleteFile={onDeleteFile}
       />,
     );
-    return { onAddFolder, onListFiles, onDeleteFolder, onEditFolder, onFileUpload, onLoadFolderTree, onDeleteFile, ...utils };
+    return { onAddFolder, onListFiles, onDeleteFolder, onEditFolder, onFileUpload, onDeleteFile, ...utils };
   }
 
   test("add folder works", async () => {
     const newFolderName = "N";
-    const folderSubTree: Folder[] = [
-      {
-        id: "1.1",
-        name: "folder 1.1",
-      },
-      {
-        id: "1.2",
-        name: "N",
-      },
-    ];
 
-    const { getByText, getByLabelText, onAddFolder, onLoadFolderTree } = setup({
-      onLoadFolderTree: jest.fn(async () => folderSubTree),
-    });
+    const { getByText, getByLabelText, onAddFolder } = setup({});
 
     // Open the root folders so we see the neewly added folder later
     exampleFolders.forEach((x) => {
@@ -139,7 +132,6 @@ describe("<FileTree />", () => {
     userEvent.click(getByText(labelSubmit));
 
     await waitFor(() => expect(onAddFolder).toHaveBeenNthCalledWith(1, "1", newFolderName));
-    await waitFor(() => expect(onLoadFolderTree).toHaveBeenNthCalledWith(1, "1"));
     await waitFor(() => expect(getByText(newFolderName)).toBeTruthy());
   });
 
@@ -148,9 +140,7 @@ describe("<FileTree />", () => {
     const folderSubTree: Folder[] = JSON.parse(JSON.stringify(exampleFolders));
     folderSubTree[0].name = newFolderName;
 
-    const { getByText, getByLabelText, onEditFolder, onLoadFolderTree } = setup({
-      onLoadFolderTree: jest.fn(async () => folderSubTree),
-    });
+    const { getByText, getByLabelText, onEditFolder } = setup({});
 
     // Click the edit button, type the new name and hit the send button
     getByText(exampleFolders[0].name).closest("li")?.querySelector(".fa-pen-to-square")?.closest("a")?.click();
@@ -161,7 +151,6 @@ describe("<FileTree />", () => {
     userEvent.click(getByText(labelSubmit));
 
     await waitFor(() => expect(onEditFolder).toHaveBeenNthCalledWith(1, "1", newFolderName));
-    await waitFor(() => expect(onLoadFolderTree).toHaveBeenNthCalledWith(1, null));
     await waitFor(() => expect(getByText(newFolderName)).toBeTruthy());
   });
 
@@ -171,16 +160,14 @@ describe("<FileTree />", () => {
     const folderToDelete = folderSubTree[2];
     folderSubTree = folderSubTree.filter((x) => x.name !== folderToDelete.name);
 
-    const { getByText, onDeleteFolder, onLoadFolderTree } = setup({
-      onLoadFolderTree: jest.fn(async () => folderSubTree),
-    });
+    const { queryByText, getByText, onDeleteFolder } = setup({});
 
     // Click the trash button and than yes in the modal
     getByText(folderToDelete.name).closest("li")?.querySelector(".fa-trash")?.closest("a")?.click();
     userEvent.click(getByText(labelYes));
 
     await waitFor(() => expect(onDeleteFolder).toHaveBeenNthCalledWith(1, folderToDelete.id));
-    await waitFor(() => expect(onLoadFolderTree).toHaveBeenNthCalledWith(1, null));
+    await waitFor(() => expect(queryByText(folderToDelete.name)).toBeNull());
   });
 
   test("upload files by dropping", async () => {

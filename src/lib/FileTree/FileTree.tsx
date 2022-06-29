@@ -12,12 +12,11 @@ import { ITranslations, Translations } from "../Utils/translations";
 import { AvailableSpace } from "./components/AvailableSpace";
 import "./css/style.css";
 
-export type OnAddFolderFn = (parentId: string | null, name: string) => Promise<boolean>;
+export type OnAddFolderFn = (parentId: string | null, name: string) => Promise<string>;
 export type OnEditFolderFn = (folderId: string, name: string) => Promise<boolean>;
 export type OnDeleteFolderFn = (folderId: string) => Promise<boolean>;
 export type OnListFilesFn = (folderId: string) => Promise<FileItem[]>;
-export type OnLoadFolderTreeFn = (parentFolderId: string | null) => Promise<Folder[]>;
-export type OnDeleteFileFn = (parentFolderId: string | null) => Promise<boolean>;
+export type OnDeleteFileFn = (fileId: string) => Promise<boolean>;
 export type OnFileUploadFn = (
   folderId: string,
   acceptedFiles: FileWithId[],
@@ -36,8 +35,6 @@ interface FileTreeProps {
   onDeleteFolder: OnDeleteFolderFn;
   /** Function called when files are listed */
   onListFiles: OnListFilesFn;
-  /** Function called when we need to refresh parts of the tree */
-  onLoadFolderTree: OnLoadFolderTreeFn;
   /** Function called when we need to delete a file */
   onDeleteFile: OnDeleteFileFn;
   /** The language to be used for the labels. If your lang is not supported you can use the customTranslations prop. */
@@ -49,31 +46,31 @@ interface FileTreeProps {
   /** The space available in bytes */
   spaceAvailable?: number;
   /** The initial folder structure */
-  folders: Folder[];
+  initialFolders: Folder[];
 }
 
 /**
  * File Tree component. Renders a file tree with clickable actions.
- * Does not care about ordering, this is expected to be delivered in the right sort order.
  */
 const FileTree: React.FC<FileTreeProps> = ({
   onFileUpload,
   onAddFolder,
   onEditFolder,
   onDeleteFolder,
-  onLoadFolderTree,
   onListFiles,
   onDeleteFile,
   customTranslations,
   language,
   spaceAvailable,
   initialSpaceUsed,
-  folders,
+  initialFolders,
 }) => {
+  const sortFolders = (folders: Folder[]) => folders.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+
   const [isAddFolderModalOpen, setIsAddFolderModalOpen] = useState(false);
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false);
   // we json stringify and parse it to a get a true copy of the array so we never modify the original array...
-  const [folderState, setFolderState] = useState(JSON.parse(JSON.stringify(folders)) as Folder[]);
+  const [folderState, setFolderState] = useState(sortFolders(JSON.parse(JSON.stringify(initialFolders)) as Folder[]));
   const [selectedFolderId, setSelectedFolderId] = useState<string>();
   const [files, setFiles] = useState<FileItem[]>();
   const [progressSates, setProgressStates] = useState<ProgressState[]>([]);
@@ -93,51 +90,29 @@ const FileTree: React.FC<FileTreeProps> = ({
     translationsSet.current = true;
   }
 
-  const calculatePathIds = (folder: Folder, allFolders: Folder[]) => {
-    const pathIds = [];
-    let start: Folder | undefined = folder;
-    while (start) {
-      pathIds.push(start.id);
-      start = allFolders.find((x) => x.id === start?.parentId);
-    }
-
-    return pathIds;
-  };
-
-  const refreshSubTreeAsync = async (folderId: string | null) => {
-    const copy = [...folderState];
-
-    const newSubTree = await onLoadFolderTree(folderId);
-
-    if (folderId != null) {
-      copy.forEach((x) => {
-        const pathIds = calculatePathIds(x, copy);
-
-        if (pathIds.includes(folderId)) {
-          // the folder is not found anymore in the new sub tree, so we remove it
-          if (x.id !== folderId && newSubTree.findIndex((f) => f.id === x.id) === -1) {
-            copy.splice(copy.indexOf(x), 1);
-          }
-        }
-      });
-    }
-
-    // add new folders
-    newSubTree.forEach((x) => {
-      if (copy.findIndex((f) => f.id === x.id) === -1) {
-        copy.push(x);
-      }
-
-      const existingEntry = copy.find((f) => f.id === x.id);
-
-      if (existingEntry) {
-        existingEntry.name = x.name;
-        // copy the open flag. If there are no subfolders anymore, set it to false
-        existingEntry.isOpen = copy.some((f) => f.parentId == existingEntry.id) ? x.isOpen : false;
+  const closeFoldersWithoutSubFolders = (state: Folder[]) => {
+    state.forEach((x) => {
+      if (!state.some((f) => f.parentId == x.id)) {
+        x.isOpen = false;
       }
     });
+  };
 
-    setFolderState(copy);
+  const deleteFolderFromState = (folderId: string) => {
+    setFolderState((prev) => {
+      const copy = [...prev];
+      copy.splice(
+        copy.findIndex((x) => x.id == folderId),
+        1,
+      );
+
+      closeFoldersWithoutSubFolders(copy);
+
+      return copy;
+    });
+
+    // remove selected folder if it was deleted
+    if (folderId == selectedFolderId) setSelectedFolderId(undefined);
   };
 
   const onToggleFolder = (folderId: string) => {
@@ -182,7 +157,18 @@ const FileTree: React.FC<FileTreeProps> = ({
         setIsFolderTreeLoading(true);
         setIsAddFolderModalOpen(false);
 
-        await refreshSubTreeAsync(parentFolderId);
+        setFolderState((prev) => {
+          const copy = [...prev];
+
+          copy.push({
+            id: result,
+            name: name,
+            parentId: parentFolderId ?? undefined,
+          });
+
+          return sortFolders(copy);
+        });
+
         setIsFolderTreeLoading(false);
       }
     };
@@ -198,10 +184,7 @@ const FileTree: React.FC<FileTreeProps> = ({
         setIsFolderTreeLoading(true);
         setIsDeleteConfirmModalOpen(false);
 
-        await refreshSubTreeAsync(folder.parentId ?? null);
-
-        // remove selected folder if it was deleted
-        if (folder.id == selectedFolderId) setSelectedFolderId(undefined);
+        deleteFolderFromState(folder.id);
 
         setIsFolderTreeLoading(false);
       }
@@ -278,7 +261,15 @@ const FileTree: React.FC<FileTreeProps> = ({
       if (result) {
         setIsFolderTreeLoading(true);
         setIsAddFolderModalOpen(false);
-        await refreshSubTreeAsync(folder.parentId ?? null);
+
+        setFolderState((prev) => {
+          const copy = [...prev];
+          const existingFolder = copy.find((x) => x.id === folder.id);
+          if (existingFolder) existingFolder.name = newName;
+
+          return sortFolders(copy);
+        });
+
         setIsFolderTreeLoading(false);
       }
     };
