@@ -171,7 +171,7 @@ describe("<FileTree />", () => {
     const folderToDelete = folderSubTree[2];
     folderSubTree = folderSubTree.filter((x) => x.name !== folderToDelete.name);
 
-    const { queryByText, getByText, onDeleteFolder, onLoadFolderTree } = setup({
+    const { getByText, onDeleteFolder, onLoadFolderTree } = setup({
       onLoadFolderTree: jest.fn(async () => folderSubTree),
     });
 
@@ -181,7 +181,6 @@ describe("<FileTree />", () => {
 
     await waitFor(() => expect(onDeleteFolder).toHaveBeenNthCalledWith(1, folderToDelete.id));
     await waitFor(() => expect(onLoadFolderTree).toHaveBeenNthCalledWith(1, null));
-    await waitFor(() => expect(queryByText(folderToDelete.name)).toBeNull());
   });
 
   test("upload files by dropping", async () => {
