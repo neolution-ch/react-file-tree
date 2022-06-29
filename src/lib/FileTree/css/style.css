@@ -1,0 +1,51 @@
+.neo-folder-tree-container {
+  background-color: white;
+}
+
+.neo-folder-tree-container a {
+  cursor: pointer;
+}
+
+.neo-folder-tree-container a:hover {
+  text-decoration: none;
+}
+
+.neo-folder-tree-container .tree {
+  position: relative;
+}
+
+.neo-folder-tree-container .tree .actions {
+  display: none;
+  color: black;
+}
+
+.neo-folder-tree-container .actions-trigger:hover .actions {
+  display: inline;
+}
+
+.neo-folder-tree-container .tree .fa-folder-open,
+.neo-folder-tree-container .tree .fa-folder {
+  color: #007bff;
+}
+
+.neo-folder-tree-container .tree ul {
+  list-style: none;
+  padding-left: 0px;
+}
+
+.neo-folder-tree-container .tree ul li {
+  position: relative;
+}
+
+.neo-folder-tree-container .tree ul:not(:first-child) li {
+  padding-left: 10px;
+}
+
+.neo-folder-tree-container .breadcrumb {
+  padding-left: 0px;
+}
+
+.neo-folder-tree-container .breadcrumb-item.active {
+  color: #00a8f7;
+  font-weight: bold;
+}
