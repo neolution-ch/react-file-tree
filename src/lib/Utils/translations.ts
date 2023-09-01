@@ -73,21 +73,21 @@ const defaultTranslations: Record<SupportedLangs, ITranslations> = {
   },
   fr: {
     errorRequired: "Obligatoire",
-    textDeleteConfirmFile: "Êtes-vous sûr de vouloir supprimer définitivement ce fichier ?",
+    textDeleteConfirmFile: "Êtes-vous sûr de vouloir supprimer définitivement ce fichier?",
     textdeleteConfirmFolder:
-      "Êtes-vous sûr de vouloir supprimer ce dossier ? Tous les sous-dossiers (y compris leurs fichiers) seront également supprimés.",
-    textDropZone: "Faites glisser et déposez quelques fichiers ici, ou cliquez pour sélectionner des fichiers",
+      "Êtes-vous sûr de vouloir supprimer ce dossier? Tous les sous-dossiers (et les fichiers qu'ils contiennent) seront également supprimés.",
+    textDropZone: "Faites glisser et déposez les fichiers ici ou cliquez pour sélectionner des fichiers",
     labelName: "Nom",
     labelDateModified: "Date modifiée",
     labelSize: "Taille du fichier",
     labelProgress: "Progrès",
     labelYes: "Oui",
-    labelCancel: "Cancel",
+    labelCancel: "Annuler",
     labelSubmit: "Soumettre",
     labelAddFolder: "Ajouter le dossier",
     labelDelete: "Supprimer",
     labelDownload: "Télécharger",
-    warningSizeExceeded: "La limite de taille de fichier a dépassé.",
+    warningSizeExceeded: "La limite de taille de fichier a été dépassée.",
   },
 };
 
