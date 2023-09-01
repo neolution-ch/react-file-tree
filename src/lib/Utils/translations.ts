@@ -74,7 +74,8 @@ const defaultTranslations: Record<SupportedLangs, ITranslations> = {
   fr: {
     errorRequired: "Obligatoire",
     textDeleteConfirmFile: "Êtes-vous sûr de vouloir supprimer définitivement ce fichier ?",
-    textdeleteConfirmFolder: "Êtes-vous sûr de vouloir supprimer ce dossier ? Tous les sous-dossiers (y compris leurs fichiers) seront également supprimés.",
+    textdeleteConfirmFolder:
+      "Êtes-vous sûr de vouloir supprimer ce dossier ? Tous les sous-dossiers (y compris leurs fichiers) seront également supprimés.",
     textDropZone: "Faites glisser et déposez quelques fichiers ici, ou cliquez pour sélectionner des fichiers",
     labelName: "Nom",
     labelDateModified: "Date modifiée",
@@ -82,7 +83,7 @@ const defaultTranslations: Record<SupportedLangs, ITranslations> = {
     labelProgress: "Progrès",
     labelYes: "Oui",
     labelCancel: "Cancel",
-    labelSubmit: "Annuler",
+    labelSubmit: "Soumettre",
     labelAddFolder: "Ajouter le dossier",
     labelDelete: "Supprimer",
     labelDownload: "Télécharger",
