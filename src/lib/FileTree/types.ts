@@ -20,6 +20,6 @@ interface Folder {
   isOpen?: boolean;
 }
 
-type SupportedLangs = "en" | "it";
+type SupportedLangs = "en" | "it" | "de" | "fr";
 
 export { FileItem, FileWithId, SupportedLangs, Folder };
